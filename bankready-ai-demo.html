@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BankReady AI — Live Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A1120; --bg2:#0D1526;
+  --surface:#121C31; --surface2:#182640; --surface3:#1E2F4E;
+  --border:#243456; --border-soft:#1B2740;
+  --text:#EDF0F7; --muted:#8C97B3; --muted2:#5E6A8A;
+  --gold:#D9B24C; --gold-soft:#F3E3AC; --gold-dim:#8A733A;
+  --teal:#28D8A8; --teal-dim:#12503F;
+  --red:#FF6B6B; --red-dim:#4A2230;
+  --radius:14px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:radial-gradient(circle at 15% 0%, #0F1B33 0%, var(--bg) 55%);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  display:flex;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+::selection{background:var(--gold); color:#0A1120;}
+h1,h2,h3,.display{font-family:'Fraunces',serif;}
+.muted{color:var(--muted);}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  width:238px; flex-shrink:0;
+  background:linear-gradient(180deg,#0D1526 0%,#0A1120 100%);
+  border-right:1px solid var(--border-soft);
+  display:flex; flex-direction:column;
+  padding:26px 16px;
+  position:sticky; top:0; height:100vh;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:0 8px 26px 8px; border-bottom:1px solid var(--border-soft); margin-bottom:18px;}
+.brand-mark{width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--gold),var(--gold-dim)); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; color:#0A1120; font-size:17px;}
+.brand-name{font-family:'Fraunces',serif; font-weight:600; font-size:16.5px; letter-spacing:.2px;}
+.brand-name span{color:var(--gold);}
+
+.nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:1.4px; color:var(--muted2); margin:16px 10px 8px;}
+.nav-item{
+  display:flex; align-items:center; gap:11px;
+  padding:9.5px 12px; border-radius:9px; margin-bottom:2px;
+  color:var(--muted); font-size:13.6px; font-weight:500; cursor:pointer;
+  transition:.15s; border:1px solid transparent;
+}
+.nav-item .ico{width:17px; text-align:center; opacity:.85; font-size:14px;}
+.nav-item:hover{background:var(--surface); color:var(--text);}
+.nav-item.active{background:linear-gradient(90deg,rgba(217,178,76,.14),rgba(217,178,76,.02)); color:var(--gold-soft); border-color:rgba(217,178,76,.25);}
+.sidebar-footer{margin-top:auto; padding-top:16px; border-top:1px solid var(--border-soft);}
+.sf-row{display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; background:var(--surface);}
+.avatar{width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--teal),#1a8a6e); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;}
+.sf-name{font-size:13px; font-weight:600;}
+.sf-role{font-size:11px; color:var(--muted2);}
+
+/* ---------- MAIN ---------- */
+.main{flex:1; min-width:0; padding:30px 40px 70px; max-width:1180px;}
+.topbar{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px; flex-wrap:wrap; gap:16px;}
+.greeting h1{font-size:27px; font-weight:600;}
+.greeting p{color:var(--muted); font-size:13.5px; margin-top:4px;}
+.rank-pill{background:var(--surface); border:1px solid var(--border); padding:9px 16px; border-radius:100px; font-size:12.5px; display:flex; align-items:center; gap:8px;}
+.rank-pill b{color:var(--gold-soft); font-family:'Fraunces',serif;}
+
+.screen{display:none; animation:fadeIn .35s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---- card grid ---- */
+.grid{display:grid; gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:1.3fr .9fr;}
+@media(max-width:1000px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-2{grid-template-columns:1fr;}}
+
+.card{
+  background:linear-gradient(160deg,var(--surface),var(--surface2) 130%);
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px;
+}
+.card-title{font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--muted2); font-weight:600; margin-bottom:10px;}
+
+/* ring */
+.ring-wrap{display:flex; align-items:center; gap:16px;}
+.ring{position:relative; width:74px; height:74px; flex-shrink:0;}
+.ring svg{transform:rotate(-90deg); width:100%; height:100%;}
+.ring circle{fill:none; stroke-width:7;}
+.ring .bg{stroke:var(--border);}
+.ring .fg{stroke:var(--gold); stroke-linecap:round; transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);}
+.ring-label{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; font-family:'Fraunces',serif;}
+.stat-num{font-size:26px; font-weight:700; font-family:'Fraunces',serif;}
+.stat-cap{font-size:12px; color:var(--muted); margin-top:2px;}
+
+.bar-track{height:8px; background:var(--surface3); border-radius:6px; overflow:hidden; margin-top:8px;}
+.bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg,var(--teal),#63f0c9); width:0%; transition:width 1.1s cubic-bezier(.4,0,.2,1);}
+.bar-fill.gold{background:linear-gradient(90deg,var(--gold-dim),var(--gold));}
+.bar-fill.red{background:linear-gradient(90deg,#7a2f38,var(--red));}
+
+.mission-row{display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border-soft);}
+.mission-row:last-child{border:none;}
+.mission-left{display:flex; align-items:center; gap:12px;}
+.chk{width:20px; height:20px; border-radius:6px; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; font-size:12px; transition:.15s;}
+.chk.done{background:var(--teal); border-color:var(--teal); color:#06231c;}
+.coin{background:rgba(217,178,76,.12); color:var(--gold-soft); font-size:11px; padding:3px 9px; border-radius:100px; border:1px solid rgba(217,178,76,.3);}
+
+.btn{
+  background:linear-gradient(135deg,var(--gold),#B8934F); color:#1A1204;
+  border:none; padding:10px 18px; border-radius:9px; font-weight:700; font-size:13px;
+  cursor:pointer; transition:.15s;
+}
+.btn:hover{filter:brightness(1.08); transform:translateY(-1px);}
+.btn.ghost{background:transparent; border:1px solid var(--border); color:var(--text); font-weight:600;}
+.btn.ghost:hover{border-color:var(--gold-dim); color:var(--gold-soft);}
+.btn.teal{background:linear-gradient(135deg,var(--teal),#159e7c); color:#06231c;}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+
+section.block{margin-bottom:26px;}
+.block-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.block-head h2{font-size:17px; font-weight:600;}
+
+.prob-card{background:linear-gradient(135deg,rgba(40,216,168,.10),rgba(40,216,168,.02)); border:1px solid var(--teal-dim);}
+.prob-big{font-size:44px; font-weight:700; color:var(--teal); font-family:'Fraunces',serif;}
+
+/* ---------- ROADMAP ---------- */
+.roadmap{display:flex; flex-direction:column; align-items:center; padding:10px 0 20px;}
+.rm-node{
+  width:100%; max-width:560px; display:flex; align-items:center; gap:16px;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px 18px;
+  margin-bottom:0; position:relative; cursor:default; transition:.15s;
+}
+.rm-node.done{border-color:var(--teal-dim); background:linear-gradient(90deg,rgba(40,216,168,.08),transparent);}
+.rm-node.current{border-color:var(--gold); box-shadow:0 0 0 3px rgba(217,178,76,.12);}
+.rm-node.locked{opacity:.45;}
+.rm-connector{width:2px; height:22px; background:var(--border);}
+.rm-connector.done{background:var(--teal-dim);}
+.rm-num{width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; background:var(--surface3); border:1px solid var(--border);}
+.rm-node.done .rm-num{background:var(--teal); color:#06231c; border:none;}
+.rm-node.current .rm-num{background:var(--gold); color:#1A1204; border:none;}
+.rm-title{font-weight:600; font-size:14.5px;}
+.rm-sub{font-size:12px; color:var(--muted2); margin-top:1px;}
+.rm-status{margin-left:auto; font-size:11px; padding:4px 10px; border-radius:100px; font-weight:600;}
+.rm-status.done{background:rgba(40,216,168,.14); color:var(--teal);}
+.rm-status.current{background:rgba(217,178,76,.16); color:var(--gold-soft);}
+.rm-status.locked{background:var(--surface3); color:var(--muted2);}
+
+/* ---------- AI MENTOR CHAT ---------- */
+.chat-shell{display:flex; flex-direction:column; height:560px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
+.chat-head{padding:14px 18px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; gap:10px; background:var(--surface2);}
+.ai-dot{width:9px; height:9px; border-radius:50%; background:var(--teal); box-shadow:0 0 0 3px rgba(40,216,168,.2);}
+.chat-body{flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:12px;}
+.msg{max-width:74%; padding:11px 15px; border-radius:14px; font-size:13.8px; line-height:1.5;}
+.msg.ai{background:var(--surface3); align-self:flex-start; border-bottom-left-radius:4px;}
+.msg.user{background:linear-gradient(135deg,var(--gold),#B8934F); color:#1A1204; align-self:flex-end; border-bottom-right-radius:4px; font-weight:500;}
+.chips{display:flex; gap:8px; flex-wrap:wrap; padding:0 18px 12px;}
+.chip{border:1px solid var(--border); background:var(--surface2); color:var(--muted); font-size:12px; padding:6px 12px; border-radius:100px; cursor:pointer; transition:.15s;}
+.chip:hover{border-color:var(--gold-dim); color:var(--gold-soft);}
+.chat-input-row{display:flex; gap:10px; padding:14px; border-top:1px solid var(--border-soft);}
+.chat-input-row input{flex:1; background:var(--surface3); border:1px solid var(--border); border-radius:10px; padding:11px 14px; color:var(--text); font-size:13.5px; font-family:inherit;}
+.chat-input-row input:focus{outline:none; border-color:var(--gold-dim);}
+.typing{display:flex; gap:4px; padding:4px 0;}
+.typing span{width:6px; height:6px; border-radius:50%; background:var(--muted2); animation:blink 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,60%,100%{opacity:.3;} 30%{opacity:1;}}
+
+/* ---------- INTERVIEW ---------- */
+.interview-stage{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:30px; text-align:center; min-height:380px; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.camera-box{width:220px; height:150px; border-radius:12px; background:linear-gradient(135deg,#182640,#0D1526); border:1.5px dashed var(--border); display:flex; align-items:center; justify-content:center; font-size:38px; margin-bottom:22px;}
+.q-badge{background:rgba(217,178,76,.14); color:var(--gold-soft); border:1px solid rgba(217,178,76,.3); font-size:11px; padding:4px 12px; border-radius:100px; margin-bottom:14px;}
+.q-text{font-family:'Fraunces',serif; font-size:22px; font-weight:600; max-width:480px; margin-bottom:26px;}
+.score-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 28px; width:100%; max-width:520px; text-align:left;}
+.score-row{}
+.score-row .lbl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;}
+
+/* ---------- RESUME ---------- */
+.upload-zone{border:1.5px dashed var(--border); border-radius:12px; padding:38px; text-align:center; cursor:pointer; transition:.15s;}
+.upload-zone:hover{border-color:var(--gold-dim); background:rgba(217,178,76,.03);}
+.mini-score{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border-soft);}
+.mini-score:last-child{border:none;}
+.tag-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+.tag{font-size:12px; padding:5px 11px; border-radius:8px; background:rgba(255,107,107,.1); color:#ff9d9d; border:1px solid rgba(255,107,107,.25);}
+.tag.good{background:rgba(40,216,168,.1); color:#7cf0d1; border-color:rgba(40,216,168,.25);}
+
+/* ---------- SALES LAB ---------- */
+.scenario-card{background:linear-gradient(135deg,rgba(255,107,107,.08),transparent); border:1px solid var(--red-dim); border-radius:12px; padding:18px; margin-bottom:18px;}
+.scenario-tag{font-size:11px; color:#ff9d9d; text-transform:uppercase; letter-spacing:.6px; font-weight:700; margin-bottom:6px;}
+textarea.reply-box{width:100%; background:var(--surface3); border:1px solid var(--border); border-radius:10px; padding:13px; color:var(--text); font-family:inherit; font-size:13.8px; resize:vertical; min-height:80px;}
+textarea.reply-box:focus{outline:none; border-color:var(--gold-dim);}
+.feedback-card{margin-top:16px; background:rgba(40,216,168,.06); border:1px solid var(--teal-dim); border-radius:12px; padding:16px; display:none;}
+.feedback-card.show{display:block;}
+
+/* ---------- LEADERBOARD ---------- */
+.lb-row{display:flex; align-items:center; gap:14px; padding:12px 14px; border-radius:10px; margin-bottom:6px; background:var(--surface);}
+.lb-row.top{background:linear-gradient(90deg,rgba(217,178,76,.12),var(--surface));}
+.lb-rank{width:26px; font-weight:700; font-family:'Fraunces',serif; color:var(--muted);}
+.lb-row.top .lb-rank{color:var(--gold);}
+.lb-name{flex:1; font-weight:600; font-size:13.5px;}
+.lb-xp{font-size:12.5px; color:var(--muted); font-weight:600;}
+
+/* ---------- JOB ZONE ---------- */
+.job-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;}
+.job-title{font-weight:700; font-size:14px;}
+.job-meta{font-size:12px; color:var(--muted2); margin-top:3px;}
+.job-status{font-size:11px; padding:4px 10px; border-radius:100px; font-weight:600;}
+.job-status.new{background:rgba(40,216,168,.14); color:var(--teal);}
+.job-status.hot{background:rgba(255,107,107,.14); color:var(--red);}
+
+.presenter-note{position:fixed; bottom:18px; right:18px; background:var(--surface2); border:1px solid var(--gold-dim); border-radius:10px; padding:10px 16px; font-size:11.5px; color:var(--muted); max-width:220px; z-index:50;}
+.presenter-note b{color:var(--gold-soft);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">B</div>
+    <div class="brand-name">Bank<span>Ready</span> AI</div>
+  </div>
+
+  <div class="nav-group-label">Learn</div>
+  <div class="nav-item active" data-screen="dashboard"><span class="ico">⌂</span>Dashboard</div>
+  <div class="nav-item" data-screen="roadmap"><span class="ico">◈</span>Learning Roadmap</div>
+  <div class="nav-item" data-screen="mentor"><span class="ico">✦</span>AI Mentor</div>
+
+  <div class="nav-group-label">Practice</div>
+  <div class="nav-item" data-screen="interview"><span class="ico">▣</span>Mock Interview</div>
+  <div class="nav-item" data-screen="saleslab"><span class="ico">◐</span>Sales Lab / Role Play</div>
+  <div class="nav-item" data-screen="resume"><span class="ico">▤</span>Resume Builder</div>
+
+  <div class="nav-group-label">Grow</div>
+  <div class="nav-item" data-screen="jobzone"><span class="ico">⌘</span>Job Zone</div>
+  <div class="nav-item" data-screen="leaderboard"><span class="ico">♛</span>Leaderboard</div>
+
+  <div class="sidebar-footer">
+    <div class="sf-row">
+      <div class="avatar">A</div>
+      <div>
+        <div class="sf-name">Ankit Verma</div>
+        <div class="sf-role">Level 5 · Relationship Builder</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ============ DASHBOARD ============ -->
+  <div class="screen active" id="dashboard">
+    <div class="topbar">
+      <div class="greeting">
+        <h1>Good Morning, Ankit 👋</h1>
+        <p>Day 14 of your Bank Ready journey — you're ahead of 72% of this batch.</p>
+      </div>
+      <div class="rank-pill">🏆 Current Rank <b>#254</b> of 2,140</div>
+    </div>
+
+    <section class="block">
+      <div class="grid grid-4">
+        <div class="card">
+          <div class="card-title">Overall Progress</div>
+          <div class="ring-wrap">
+            <div class="ring">
+              <svg viewBox="0 0 80 80"><circle class="bg" cx="40" cy="40" r="34"/><circle class="fg" cx="40" cy="40" r="34" data-pct="68"/></svg>
+              <div class="ring-label">68%</div>
+            </div>
+            <div><div class="stat-cap">Level 5</div><div style="font-weight:700; font-size:14.5px;">Relationship Builder</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Interview Score</div>
+          <div class="stat-num">82%</div>
+          <div class="bar-track"><div class="bar-fill gold" data-pct="82"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">English Score</div>
+          <div class="stat-num">74%</div>
+          <div class="bar-track"><div class="bar-fill" data-pct="74"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Resume Score</div>
+          <div class="stat-num">91%</div>
+          <div class="bar-track"><div class="bar-fill" data-pct="91"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-2">
+      <section class="block" style="margin-bottom:0;">
+        <div class="card">
+          <div class="block-head" style="margin-bottom:6px;"><h2>Today's Missions</h2><span class="coin">+100 coins</span></div>
+          <div class="mission-row">
+            <div class="mission-left"><div class="chk done">✓</div><div>Watch 2 videos — Retail Banking Products</div></div>
+          </div>
+          <div class="mission-row">
+            <div class="mission-left"><div class="chk done">✓</div><div>English Practice — 5 min speaking</div></div>
+          </div>
+          <div class="mission-row">
+            <div class="mission-left"><div class="chk" onclick="this.classList.toggle('done'); this.innerHTML=this.classList.contains('done')?'✓':'';">​</div><div>Complete Sales Pitch quiz</div></div>
+            <span class="coin">today</span>
+          </div>
+          <div class="mission-row">
+            <div class="mission-left"><div class="chk" onclick="this.classList.toggle('done'); this.innerHTML=this.classList.contains('done')?'✓':'';">​</div><div>Mock Interview — Objection Handling</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" style="margin-bottom:0;">
+        <div class="card prob-card">
+          <div class="card-title" style="color:#7cf0d1;">Probability of Selection</div>
+          <div class="prob-big">72%</div>
+          <p class="muted" style="font-size:12.5px; margin-top:6px; line-height:1.5;">Based on your interview, English & sales practice trend — a guidance signal, not a guarantee. Keep this week's streak alive to push past 75%.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="block">
+      <div class="block-head"><h2>Continue where you left off</h2></div>
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-title">Continue Learning</div>
+          <div style="font-weight:700; margin:4px 0 10px;">Cross-Selling Insurance Products</div>
+          <div class="bar-track"><div class="bar-fill" data-pct="55"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Continue Mock Interview</div>
+          <div style="font-weight:700; margin:4px 0 10px;">"Sell this pen" — Round 2</div>
+          <button class="btn ghost" onclick="showScreen('interview')">Resume →</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Continue Assignment</div>
+          <div style="font-weight:700; margin:4px 0 10px;">KYC Documentation Case Study</div>
+          <button class="btn ghost">Resume →</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ ROADMAP ============ -->
+  <div class="screen" id="roadmap">
+    <div class="topbar"><div class="greeting"><h1>Your Learning Roadmap</h1><p>No random videos — one guided path from Day 1 to Placement Ready.</p></div></div>
+    <div class="roadmap" id="roadmapList"></div>
+  </div>
+
+  <!-- ============ AI MENTOR ============ -->
+  <div class="screen" id="mentor">
+    <div class="topbar"><div class="greeting"><h1>AI Mentor</h1><p>Ask anything — banking concepts, English, interview prep, career roadmap.</p></div></div>
+    <div class="chat-shell">
+      <div class="chat-head"><div class="ai-dot"></div><div><div style="font-weight:700; font-size:13.5px;">BankReady AI Mentor</div><div style="font-size:11px; color:var(--muted2);">Online · replies instantly</div></div></div>
+      <div class="chat-body" id="chatBody">
+        <div class="msg ai">Namaste Ankit! Main tumhara AI Mentor hoon 🙏 Kuch bhi poochho — banking, English, interview, career roadmap. Neeche kuch sample questions bhi hain.</div>
+      </div>
+      <div class="chips">
+        <div class="chip" onclick="askMentor('Sir FD aur RD mein difference?')">FD aur RD mein difference?</div>
+        <div class="chip" onclick="askMentor('Mujhe English improve karni hai')">English improve karni hai</div>
+        <div class="chip" onclick="askMentor('Kal mera interview hai')">Kal mera interview hai</div>
+        <div class="chip" onclick="askMentor('Resume review karo')">Resume review karo</div>
+        <div class="chip" onclick="askMentor('Mujhe Axis SO banna hai')">Mujhe Axis SO banna hai</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Type your question in Hindi or English..." onkeypress="if(event.key==='Enter')sendChat()">
+        <button class="btn" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ INTERVIEW ============ -->
+  <div class="screen" id="interview">
+    <div class="topbar"><div class="greeting"><h1>AI Mock Interview</h1><p>Camera-based practice with instant AI scoring.</p></div></div>
+    <div class="interview-stage" id="interviewStage">
+      <div class="camera-box">📹</div>
+      <div class="q-badge">Ready to begin</div>
+      <div class="q-text">Click start — the AI interviewer will ask you 5 real banking-interview questions, live.</div>
+      <button class="btn" onclick="startInterview()">▶ Start Interview</button>
+    </div>
+  </div>
+
+  <!-- ============ SALES LAB ============ -->
+  <div class="screen" id="saleslab">
+    <div class="topbar"><div class="greeting"><h1>Sales Lab — Role Play Simulator</h1><p>AI customer, real objections. You play the RM.</p></div></div>
+    <div class="grid grid-2">
+      <div>
+        <div class="scenario-card">
+          <div class="scenario-tag">Customer objection</div>
+          <div style="font-size:15.5px; font-family:'Fraunces',serif;" id="objectionText">"Mujhe Insurance nahi chahiye — pehle se LIC hai mere paas."</div>
+        </div>
+        <div style="font-size:12.5px; color:var(--muted); margin-bottom:8px; font-weight:600;">Your response as RM:</div>
+        <textarea class="reply-box" id="replyBox" placeholder="Type how you'd handle this objection..."></textarea>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button class="btn" onclick="getFeedback()">Get AI Feedback</button>
+          <button class="btn ghost" onclick="nextScenario()">Next Scenario →</button>
+        </div>
+        <div class="feedback-card" id="feedbackCard"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Objection Handling Score</div>
+        <div class="score-row"><div class="lbl"><span>Empathy</span><span>—</span></div><div class="bar-track"><div class="bar-fill" id="sc1"></div></div></div>
+        <div class="score-row" style="margin-top:14px;"><div class="lbl"><span>Need Analysis</span><span>—</span></div><div class="bar-track"><div class="bar-fill gold" id="sc2"></div></div></div>
+        <div class="score-row" style="margin-top:14px;"><div class="lbl"><span>Closing Technique</span><span>—</span></div><div class="bar-track"><div class="bar-fill" id="sc3"></div></div></div>
+        <p class="muted" style="font-size:12px; margin-top:16px; line-height:1.5;">Practice daily objections: pricing, "already have LIC," "sochna hai," "family se poochna hai," and more — all inside Sales Lab.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESUME ============ -->
+  <div class="screen" id="resume">
+    <div class="topbar"><div class="greeting"><h1>AI Resume Builder</h1><p>Upload once. Get an ATS score, grammar fixes and formatting suggestions in seconds.</p></div></div>
+    <div class="grid grid-2">
+      <div class="upload-zone" onclick="analyzeResume()" id="uploadZone">
+        <div style="font-size:34px; margin-bottom:10px;">📄</div>
+        <div style="font-weight:700; margin-bottom:4px;">Click to simulate resume upload</div>
+        <div class="muted" style="font-size:12.5px;">PDF or DOCX · AI analysis in ~4 seconds</div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI Analysis</div>
+        <div id="resumeResults">
+          <p class="muted" style="font-size:13px;">Upload a resume to see the score breakdown.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ JOB ZONE ============ -->
+  <div class="screen" id="jobzone">
+    <div class="topbar"><div class="greeting"><h1>Job Zone</h1><p>Live banking, NBFC & fintech openings — matched to your profile score.</p></div></div>
+    <div class="job-card"><div><div class="job-title">Relationship Manager — Axis Bank</div><div class="job-meta">Lucknow · Walk-in · CTC ₹2.8–3.6 LPA</div></div><span class="job-status hot">Hot</span></div>
+    <div class="job-card"><div><div class="job-title">Sales Executive — HDFC Bank</div><div class="job-meta">Lucknow · Apply Online · CTC ₹2.4–3.0 LPA</div></div><span class="job-status new">New</span></div>
+    <div class="job-card"><div><div class="job-title">CASA Executive — ICICI Bank</div><div class="job-meta">Kanpur · Walk-in · CTC ₹2.5–3.2 LPA</div></div><span class="job-status new">New</span></div>
+    <div class="job-card"><div><div class="job-title">Field Sales Officer — IDFC First Bank</div><div class="job-meta">Lucknow · Apply Online · CTC ₹2.2–2.8 LPA</div></div><span class="job-status new">New</span></div>
+  </div>
+
+  <!-- ============ LEADERBOARD ============ -->
+  <div class="screen" id="leaderboard">
+    <div class="topbar"><div class="greeting"><h1>Leaderboard</h1><p>This week's top performers across the batch.</p></div></div>
+    <div class="lb-row top"><div class="lb-rank">👑1</div><div class="lb-name">Priya Sharma</div><div class="lb-xp">4,820 XP</div></div>
+    <div class="lb-row top"><div class="lb-rank">2</div><div class="lb-name">Rohit Gupta</div><div class="lb-xp">4,510 XP</div></div>
+    <div class="lb-row top"><div class="lb-rank">3</div><div class="lb-name">Simran Kaur</div><div class="lb-xp">4,290 XP</div></div>
+    <div class="lb-row"><div class="lb-rank">4</div><div class="lb-name">Mohd. Faizan</div><div class="lb-xp">3,980 XP</div></div>
+    <div class="lb-row"><div class="lb-rank">5</div><div class="lb-name">Anjali Yadav</div><div class="lb-xp">3,760 XP</div></div>
+    <div class="lb-row" style="border:1px solid var(--gold-dim);"><div class="lb-rank">254</div><div class="lb-name">Ankit Verma (you)</div><div class="lb-xp">1,340 XP</div></div>
+  </div>
+
+</div>
+
+<div class="presenter-note">🎤 <b>Demo mode</b> — sab kuch clickable hai. Sidebar se koi bhi tab try karo.</div>
+
+<script>
+// ---------- NAV ----------
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`.nav-item[data-screen="${id}"]`).classList.add('active');
+  if(id==='roadmap') animateBars();
+  if(id==='dashboard') animateBars();
+}
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>showScreen(n.dataset.screen)));
+
+function animateBars(){
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill[data-pct]').forEach(el=>{el.style.width=el.dataset.pct+'%';});
+    document.querySelectorAll('.ring .fg').forEach(c=>{
+      const r=34, circ=2*Math.PI*r, pct=c.dataset.pct/100;
+      c.style.strokeDasharray=circ;
+      c.style.strokeDashoffset=circ;
+      requestAnimationFrame(()=>{c.style.strokeDashoffset=circ-(circ*pct);});
+    });
+  });
+}
+window.addEventListener('load', animateBars);
+
+// ---------- ROADMAP ----------
+const roadmapSteps=[
+  {t:"Mindset",s:"Banking career foundations",st:"done"},
+  {t:"Banking Basics",s:"Core concepts & terminology",st:"done"},
+  {t:"Communication",s:"Verbal & written skills",st:"done"},
+  {t:"English",s:"Speaking, grammar & vocabulary",st:"current"},
+  {t:"Retail Banking",s:"Branch operations",st:"locked"},
+  {t:"Products",s:"FD, RD, Loans, Insurance",st:"locked"},
+  {t:"Sales",s:"Pitch, objection handling",st:"locked"},
+  {t:"CRM",s:"Customer relationship mgmt",st:"locked"},
+  {t:"Customer Handling",s:"Service & complaints",st:"locked"},
+  {t:"Cross Sell",s:"Product bundling",st:"locked"},
+  {t:"Investment",s:"Mutual funds & demat",st:"locked"},
+  {t:"Insurance",s:"Life & general insurance",st:"locked"},
+  {t:"Digital Banking",s:"UPI, apps, net banking",st:"locked"},
+  {t:"Interview",s:"Mock rounds & feedback",st:"locked"},
+  {t:"Placement Ready",s:"Final certification",st:"locked"},
+];
+const rmList=document.getElementById('roadmapList');
+roadmapSteps.forEach((step,i)=>{
+  if(i>0){
+    const c=document.createElement('div');
+    c.className='rm-connector'+(roadmapSteps[i-1].st==='done'?' done':'');
+    rmList.appendChild(c);
+  }
+  const node=document.createElement('div');
+  node.className='rm-node '+step.st;
+  const num = step.st==='done' ? '✓' : (i+1);
+  const statusLabel = step.st==='done'?'Completed':step.st==='current'?'In progress':'Locked';
+  node.innerHTML=`<div class="rm-num">${num}</div>
+    <div><div class="rm-title">${step.t}</div><div class="rm-sub">${step.s}</div></div>
+    <div class="rm-status ${step.st}">${statusLabel}</div>`;
+  rmList.appendChild(node);
+});
+
+// ---------- AI MENTOR CHAT ----------
+const chatBody=document.getElementById('chatBody');
+const mentorReplies=[
+  {k:['fd','rd','difference'], a:"FD (Fixed Deposit) mein ek baar poora lump sum amount deposit karte ho, aur RD (Recurring Deposit) mein har mahine chhoti fixed amount deposit karte ho. FD better hai agar tumhare paas already paisa hai; RD better hai savings habit banane ke liye. Dono par interest milta hai, but calculation method alag hota hai — chaho toh main ek chart bana doon?"},
+  {k:['english','improve'], a:"Great goal! Tumhare current English score 74% ke hisaab se, main tumhe suggest karunga: (1) Daily 5-min speaking practice — English Lab mein, (2) Roz 10 naye banking words seekho, (3) Mock calls practice karo. 2 weeks mein 74% se 85%+ tak le jaate hain. Roadmap start karun?"},
+  {k:['kal','interview','tomorrow'], a:"Perfect timing! Chalo abhi ek quick mock round karte hain — 'Introduce Yourself', 'Why Banking', aur 'Sell this pen' pe focus karenge. Main tumhe turant confidence, filler words, aur answer structure pe feedback dunga. Mock Interview tab pe chalte hain?"},
+  {k:['resume','review'], a:"Bilkul — apna resume upload karo Resume Builder section mein, main ATS score, grammar aur formatting sab check karke 10 second mein detailed suggestions de dunga."},
+  {k:['axis','so','banna'], a:"Axis Bank Sales Officer banne ke liye ye roadmap follow karo: Banking Basics → Communication → English → Sales → Products → Interview Prep. Tumhara current progress dekhte hue, ~18 din mein tum placement-ready ho sakte ho. Roadmap tab mein poora path dikh raha hai."},
+];
+function findReply(text){
+  const low=text.toLowerCase();
+  for(const r of mentorReplies){ if(r.k.some(k=>low.includes(k))) return r.a; }
+  return "Accha sawal hai! Iske baare mein detailed material Learning Roadmap aur AI Tools section mein available hai — main tumhe step-by-step guide kar sakta hoon. Kya tum practical example ya theory pehle chahte ho?";
+}
+function appendMsg(text,cls){
+  const d=document.createElement('div'); d.className='msg '+cls; d.textContent=text;
+  chatBody.appendChild(d); chatBody.scrollTop=chatBody.scrollHeight;
+}
+function askMentor(q){ appendMsg(q,'user'); typeThenReply(q); }
+function sendChat(){
+  const inp=document.getElementById('chatInput');
+  if(!inp.value.trim()) return;
+  const q=inp.value; appendMsg(q,'user'); inp.value=''; typeThenReply(q);
+}
+function typeThenReply(q){
+  const t=document.createElement('div'); t.className='msg ai typing-wrap';
+  t.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  chatBody.appendChild(t); chatBody.scrollTop=chatBody.scrollHeight;
+  setTimeout(()=>{ t.remove(); appendMsg(findReply(q),'ai'); }, 850);
+}
+
+// ---------- INTERVIEW ----------
+const interviewQs=[
+  "Introduce yourself.",
+  "Why do you want to join Banking?",
+  "Why Sales as a career?",
+  "Sell this pen to me.",
+  "A customer is angry about a delayed cheque — handle it."
+];
+let qIndex=0;
+function startInterview(){
+  qIndex=0; renderQuestion();
+}
+function renderQuestion(){
+  const stage=document.getElementById('interviewStage');
+  stage.innerHTML=`
+    <div class="camera-box">📹</div>
+    <div class="q-badge">Question ${qIndex+1} of ${interviewQs.length}</div>
+    <div class="q-text">"${interviewQs[qIndex]}"</div>
+    <button class="btn" onclick="nextQuestion()">${qIndex<interviewQs.length-1?'Next Question →':'Finish & See AI Score →'}</button>
+  `;
+}
+function nextQuestion(){
+  qIndex++;
+  if(qIndex<interviewQs.length){ renderQuestion(); } else { showInterviewScore(); }
+}
+function showInterviewScore(){
+  const stage=document.getElementById('interviewStage');
+  const scores=[["Confidence",84],["Eye Contact",76],["Speaking Speed",71],["Filler Words",65],["Smile",88],["Communication",80],["Sales Ability",73],["Overall",79]];
+  stage.innerHTML=`
+    <div class="q-badge">Interview Complete</div>
+    <div class="q-text" style="font-size:18px;">AI Performance Report</div>
+    <div class="score-grid">
+      ${scores.map(([l,v],i)=>`<div class="score-row"><div class="lbl"><span>${l}</span><span>${v}%</span></div><div class="bar-track"><div class="bar-fill${l==='Overall'?' gold':''}" id="isc${i}"></div></div></div>`).join('')}
+    </div>
+    <button class="btn ghost" style="margin-top:22px;" onclick="startInterview()">↺ Retake Interview</button>
+  `;
+  requestAnimationFrame(()=>{
+    scores.forEach((s,i)=>{ document.getElementById('isc'+i).style.width=s[1]+'%'; });
+  });
+}
+
+// ---------- SALES LAB ----------
+const scenarios=[
+  '"Mujhe Insurance nahi chahiye — pehle se LIC hai mere paas."',
+  '"Interest rate itna kam kyun hai? Doosre bank zyada de rahe hain."',
+  '"Abhi decide nahi kar sakta, family se poochna padega."',
+  '"Mutual fund mein risk hai, main nahi karunga."'
+];
+let scenIdx=0;
+function nextScenario(){
+  scenIdx=(scenIdx+1)%scenarios.length;
+  document.getElementById('objectionText').textContent=scenarios[scenIdx];
+  document.getElementById('feedbackCard').classList.remove('show');
+  document.getElementById('replyBox').value='';
+}
+function getFeedback(){
+  const val=document.getElementById('replyBox').value.trim();
+  const fc=document.getElementById('feedbackCard');
+  fc.classList.add('show');
+  fc.innerHTML = val.length>0
+    ? `<b style="color:#7cf0d1;">AI Feedback:</b><p style="margin-top:8px; font-size:13.3px; line-height:1.6;">Good start — tumne customer ki baat suni. Improve karo: pehle unki current LIC policy ke baare mein poocho (need analysis), phir apne product ka ek specific benefit jo unke paas nahi hai woh highlight karo, aur end mein soft close karo — "Ek 5-min comparison dikha doon?" isse pressure nahi lagta.</p>`
+    : `<b style="color:#ff9d9d;">Try again:</b><p style="margin-top:8px; font-size:13.3px;">Pehle apna response likho, phir AI feedback dega.</p>`;
+  document.getElementById('sc1').style.width='78%';
+  document.getElementById('sc2').style.width='65%';
+  document.getElementById('sc3').style.width='70%';
+}
+
+// ---------- RESUME ----------
+function analyzeResume(){
+  const zone=document.getElementById('uploadZone');
+  zone.innerHTML=`<div style="font-size:30px;">⏳</div><div style="font-weight:700; margin-top:8px;">Analyzing resume...</div>`;
+  setTimeout(()=>{
+    zone.innerHTML=`<div style="font-size:34px; margin-bottom:10px;">✅</div><div style="font-weight:700;">Ankit_Verma_Resume.pdf</div><div class="muted" style="font-size:12.5px; margin-top:4px;">Analysis complete</div>`;
+    document.getElementById('resumeResults').innerHTML=`
+      <div class="mini-score"><span>ATS Score</span><b style="color:var(--teal);">88 / 100</b></div>
+      <div class="mini-score"><span>Grammar</span><b style="color:var(--teal);">92 / 100</b></div>
+      <div class="mini-score"><span>Formatting</span><b style="color:var(--gold-soft);">76 / 100</b></div>
+      <div class="mini-score"><span>Keyword Match (Banking)</span><b style="color:var(--gold-soft);">81 / 100</b></div>
+      <div style="margin-top:12px; font-size:12px; color:var(--muted2); font-weight:600;">AI Suggestions</div>
+      <div class="tag-list">
+        <div class="tag good">Strong action verbs used</div>
+        <div class="tag">Add measurable achievements</div>
+        <div class="tag">Reduce to 1 page</div>
+        <div class="tag">Add "CASA, KYC, Cross-sell" keywords</div>
+      </div>
+      <button class="btn teal" style="margin-top:16px; width:100%;">Download Improved Resume</button>
+    `;
+  }, 1200);
+}
+</script>
+</body>
+</html>
